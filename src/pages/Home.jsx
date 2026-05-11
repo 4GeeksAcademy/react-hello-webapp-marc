@@ -9,6 +9,26 @@ export const Home = () => {
 	const [showModal, setShowModal] = useState(false)
 	const [selectedId, setSelectedId] = useState(null)
 
+	const createAgenda = async () => {
+
+		try {
+
+			const response = await fetch(
+				"https://playground.4geeks.com/contact/agendas/marc_contacts",
+				{
+					method: "POST"
+				}
+			)
+
+			if (!response.ok) {
+				console.log("La agenda ya existe")
+			}
+
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
 	const getContacts = async () => {
 
 		try {
@@ -17,12 +37,18 @@ export const Home = () => {
 				"https://playground.4geeks.com/contact/agendas/marc_contacts/contacts"
 			)
 
+			if (!response.ok) {
+				throw new Error("Error al obtener contactos")
+			}
+
 			const data = await response.json()
 
 			dispatch({
 				type: "set_contacts",
 				payload: data.contacts
 			})
+
+			return data
 
 		} catch (error) {
 			console.log(error)
@@ -33,12 +59,16 @@ export const Home = () => {
 
 		try {
 
-			await fetch(
+			const response = await fetch(
 				`https://playground.4geeks.com/contact/agendas/marc_contacts/contacts/${id}`,
 				{
 					method: "DELETE"
 				}
 			)
+
+			if (!response.ok) {
+				throw new Error("Error al eliminar contacto")
+			}
 
 			getContacts()
 
@@ -48,7 +78,15 @@ export const Home = () => {
 	}
 
 	useEffect(() => {
-		getContacts()
+
+		const initialize = async () => {
+
+			await createAgenda()
+			await getContacts()
+		}
+
+		initialize()
+
 	}, [])
 
 	return (
@@ -57,34 +95,35 @@ export const Home = () => {
 
 			<Link to="/add-contact">
 
-	<button className="btn btn-dark rounded-pill px-4 py-2 shadow mb-4">
-		+ Crear contacto
-	</button>
-	{
-	store.contacts.length === 0 && (
+				<button className="btn btn-dark rounded-pill px-4 py-2 shadow mb-4">
+					+ Crear contacto
+				</button>
 
-		<div
-			className="d-flex flex-column justify-content-center align-items-center mt-5"
-			style={{ height: "50vh" }}
-		>
+			</Link>
 
-			<div className="bg-white shadow-lg rounded-4 p-5 text-center">
+			{
+				store.contacts.length === 0 && (
 
-				<h1 className="display-1 mb-3">
-					📭
-				</h1>
+					<div
+						className="d-flex flex-column justify-content-center align-items-center mt-5"
+						style={{ height: "50vh" }}
+					>
 
-				<h3 className="fw-bold mb-2">
-					No hay contactos todavía
-				</h3>
+						<div className="bg-white shadow-lg rounded-4 p-5 text-center">
 
-			</div>
+							<h1 className="display-1 mb-3">
+								📭
+							</h1>
 
-		</div>
-	)
-}
+							<h3 className="fw-bold mb-2">
+								No hay contactos todavía
+							</h3>
 
-</Link>
+						</div>
+
+					</div>
+				)
+			}
 
 			{
 				(store.filteredContacts.length > 0
