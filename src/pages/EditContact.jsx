@@ -8,80 +8,81 @@ export const EditContact = () => {
 
     const navigate = useNavigate()
     const { store } = useGlobalReducer()
-    console.log(store.contacts)
 
     const [contact, setContact] = useState({
-        name: "",
+        full_name: "",
         phone: "",
         email: "",
         address: ""
     })
 
-
     const handleChange = (e) => {
+
         setContact({
             ...contact,
             [e.target.name]: e.target.value
         })
     }
 
-    const updateContact = async () => {
+    const updateContact = () => {
 
-        try {
+        const contacts =
+            JSON.parse(localStorage.getItem("contacts")) || []
 
-            await fetch(
-                `https://playground.4geeks.com/contact/agendas/marc_contacts/contacts/${id}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(contact)
-                }
-            )
+        const updatedContacts = contacts.map((item) =>
 
-            navigate("/")
+            item.id === parseInt(id)
+                ? { ...contact, id: parseInt(id) }
+                : item
+        )
 
-        } catch (error) {
-            console.log(error)
-        }
+        localStorage.setItem(
+            "contacts",
+            JSON.stringify(updatedContacts)
+        )
+
+        navigate("/")
     }
 
     useEffect(() => {
 
         const foundContact = store.contacts.find(
-           (item) => item.id === parseInt(id)
+            (item) => item.id === parseInt(id)
         )
 
         if (foundContact) {
 
             setContact({
-                name: foundContact.name || "",
+                full_name: foundContact.full_name || "",
                 phone: foundContact.phone || "",
                 email: foundContact.email || "",
-                address: foundContact.address || "",
-                agenda_slug: "marc_contacts"
+                address: foundContact.address || ""
             })
         }
 
     }, [store.contacts, id])
 
     return (
+
         <div className="container mt-5">
 
-            <h1>Editar contacto</h1>
+            <h1 className="fw-bold mb-4">
+                Editar contacto
+            </h1>
 
             <input
                 className="form-control mb-3"
                 type="text"
-                name="name"
-                value={contact.name}
+                placeholder="Nombre"
+                name="full_name"
+                value={contact.full_name}
                 onChange={handleChange}
             />
 
             <input
                 className="form-control mb-3"
                 type="text"
+                placeholder="Teléfono"
                 name="phone"
                 value={contact.phone}
                 onChange={handleChange}
@@ -90,21 +91,23 @@ export const EditContact = () => {
             <input
                 className="form-control mb-3"
                 type="email"
+                placeholder="Email"
                 name="email"
                 value={contact.email}
                 onChange={handleChange}
             />
 
             <input
-                className="form-control mb-3"
+                className="form-control mb-4"
                 type="text"
+                placeholder="Dirección"
                 name="address"
                 value={contact.address}
                 onChange={handleChange}
             />
 
             <button
-                className="btn btn-primary"
+                className="btn btn-dark w-100 py-2 fw-bold rounded-pill shadow"
                 onClick={updateContact}
             >
                 Actualizar contacto

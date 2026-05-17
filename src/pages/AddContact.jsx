@@ -6,55 +6,54 @@ export const AddContact = () => {
     const navigate = useNavigate()
 
     const [contact, setContact] = useState({
-        name: "",
+        full_name: "",
         phone: "",
         email: "",
-        address: "",
-        agenda_slug: "marc_contacts"
+        address: ""
     })
 
     const handleChange = (e) => {
+
         setContact({
             ...contact,
             [e.target.name]: e.target.value
         })
     }
 
-    const createContact = async () => {
+    const createContact = () => {
 
-        try {
+        const savedContacts =
+            JSON.parse(localStorage.getItem("contacts")) || []
 
-            const response = await fetch(
-                "https://playground.4geeks.com/contact/agendas/marc_contacts/contacts",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(contact)
-                }
-            )
-            const data = await response.json()
-
-            console.log(data)
-
-            navigate("/")
-
-        } catch (error) {
-            console.log(error)
+        const newContact = {
+            ...contact,
+            id: Date.now()
         }
+
+        savedContacts.push(newContact)
+
+        localStorage.setItem(
+            "contacts",
+            JSON.stringify(savedContacts)
+        )
+
+        navigate("/")
     }
 
     return (
+
         <div className="container mt-5">
 
-            <h1>Añadir contacto</h1>
+            <h1 className="fw-bold mb-4">
+                Añadir contacto
+            </h1>
 
             <input
                 className="form-control mb-3"
                 type="text"
                 placeholder="Nombre"
-                name="name"
+                name="full_name"
+                value={contact.full_name}
                 onChange={handleChange}
             />
 
@@ -66,7 +65,8 @@ export const AddContact = () => {
                 value={contact.phone}
                 onChange={(e) => {
 
-                    const onlyNumbers = e.target.value.replace(/\D/g, "")
+                    const onlyNumbers =
+                        e.target.value.replace(/\D/g, "")
 
                     setContact({
                         ...contact,
@@ -82,24 +82,30 @@ export const AddContact = () => {
                 name="email"
                 value={contact.email}
                 onChange={handleChange}
-                pattern=".+@(gmail|hotmail|outlook|yahoo)\.(com|org|net|cat)"
-                required
             />
 
             <input
-                className="form-control mb-3"
+                className="form-control mb-4"
                 type="text"
                 placeholder="Dirección"
                 name="address"
+                value={contact.address}
                 onChange={handleChange}
             />
 
             <button
+                type="button"
                 className="btn btn-dark w-100 py-2 fw-bold rounded-pill shadow"
+
                 onClick={() => {
 
                     const emailRegex =
                         /^[^\s@]+@[^\s@]+\.(com|org|net|cat)$/i
+
+                    if (!contact.full_name.trim()) {
+                        alert("Introduce un nombre")
+                        return
+                    }
 
                     if (!contact.phone) {
                         alert("Introduce un teléfono")
@@ -113,6 +119,11 @@ export const AddContact = () => {
 
                     if (!emailRegex.test(contact.email)) {
                         alert("Introduce un email válido")
+                        return
+                    }
+
+                    if (!contact.address.trim()) {
+                        alert("Introduce una dirección")
                         return
                     }
 

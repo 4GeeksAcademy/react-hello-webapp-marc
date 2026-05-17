@@ -12,24 +12,23 @@ export const Navbar = () => {
 	const searchContact = () => {
 
 		const filtered = store.contacts.filter((contact) =>
-			contact.name.toLowerCase().includes(search.toLowerCase())
+
+			contact.full_name &&
+			contact.full_name
+				.toLowerCase()
+				.includes(search.toLowerCase())
 		)
 
-		if (filtered.length > 0) {
+		dispatch({
+			type: "filter_contacts",
+			payload: {
+				contacts: filtered,
+				active: true
+			}
+		})
 
-			dispatch({
-				type: "filter_contacts",
-				payload: filtered
-			})
-
-		} else {
-
+		if (filtered.length === 0) {
 			setShowModal(true)
-
-			dispatch({
-				type: "filter_contacts",
-				payload: []
-			})
 		}
 	}
 
@@ -39,7 +38,10 @@ export const Navbar = () => {
 
 		dispatch({
 			type: "filter_contacts",
-			payload: []
+			payload: {
+				contacts: [],
+				active: false
+			}
 		})
 	}
 
@@ -49,16 +51,16 @@ export const Navbar = () => {
 
 			<nav className="navbar navbar-dark bg-dark shadow-sm py-3">
 
-				<div className="container d-flex justify-content-between align-items-center">
+				<div className="container d-flex justify-content-between align-items-center flex-wrap gap-3">
 
 					<Link
 						to="/"
 						className="navbar-brand fw-bold fs-3 text-white text-decoration-none"
 					>
-						 Lista de Contactos
+						Lista de Contactos
 					</Link>
 
-					<div className="d-flex gap-2">
+					<div className="d-flex gap-2 flex-wrap">
 
 						<input
 							type="text"
@@ -66,7 +68,6 @@ export const Navbar = () => {
 							placeholder="Buscar contacto..."
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-
 							onKeyDown={(e) => {
 								if (e.key === "Enter") {
 									searchContact()
@@ -82,7 +83,7 @@ export const Navbar = () => {
 						</button>
 
 						<button
-							className="btn btn-outline-light rounded-pill"
+							className="btn btn-outline-light rounded-pill px-4"
 							onClick={resetSearch}
 						>
 							Todos

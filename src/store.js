@@ -1,32 +1,34 @@
 export const initialStore = () => {
-  return {
+    return {
 
-    contacts: [],
+        contacts: [],
+        filteredContacts: [],
+        searchActive: false
 
-    filteredContacts: []
-
-  }
+    }
 }
 
 export default function storeReducer(store, action = {}) {
 
-  switch (action.type) {
+	switch (action.type) {
 
-    case "set_contacts":
+		case "set_contacts":
 
-      return {
-        ...store,
-        contacts: action.payload
-      }
+			return {
+				...store,
+				contacts: action.payload
+			}
 
-    case "filter_contacts":
+		case "filter_contacts":
 
-      return {
-        ...store,
-        filteredContacts: action.payload
-      }
+			return {
+				...store,
+				filteredContacts: action.payload.contacts,
+				searchActive: action.payload.active
+			}
 
-    default:
-      throw Error("Unknown action.")
-  }
+		default:
+
+			return store
+	}
 }

@@ -9,83 +9,36 @@ export const Home = () => {
 	const [showModal, setShowModal] = useState(false)
 	const [selectedId, setSelectedId] = useState(null)
 
-	const createAgenda = async () => {
+	const getContacts = () => {
 
-		try {
+		const contacts =
+			JSON.parse(localStorage.getItem("contacts")) || []
 
-			const response = await fetch(
-				"https://playground.4geeks.com/contact/agendas/marc_contacts",
-				{
-					method: "POST"
-				}
-			)
-
-			if (!response.ok) {
-				console.log("La agenda ya existe")
-			}
-
-		} catch (error) {
-			console.log(error)
-		}
+		dispatch({
+			type: "set_contacts",
+			payload: contacts
+		})
 	}
 
-	const getContacts = async () => {
+	const deleteContact = (id) => {
 
-		try {
+		const contacts =
+			JSON.parse(localStorage.getItem("contacts")) || []
 
-			const response = await fetch(
-				"https://playground.4geeks.com/contact/agendas/marc_contacts/contacts"
-			)
+		const updatedContacts =
+			contacts.filter(contact => contact.id !== id)
 
-			if (!response.ok) {
-				throw new Error("Error al obtener contactos")
-			}
+		localStorage.setItem(
+			"contacts",
+			JSON.stringify(updatedContacts)
+		)
 
-			const data = await response.json()
-
-			dispatch({
-				type: "set_contacts",
-				payload: data.contacts
-			})
-
-			return data
-
-		} catch (error) {
-			console.log(error)
-		}
-	}
-
-	const deleteContact = async (id) => {
-
-		try {
-
-			const response = await fetch(
-				`https://playground.4geeks.com/contact/agendas/marc_contacts/contacts/${id}`,
-				{
-					method: "DELETE"
-				}
-			)
-
-			if (!response.ok) {
-				throw new Error("Error al eliminar contacto")
-			}
-
-			getContacts()
-
-		} catch (error) {
-			console.log(error)
-		}
+		getContacts()
 	}
 
 	useEffect(() => {
 
-		const initialize = async () => {
-
-			await createAgenda()
-			await getContacts()
-		}
-
-		initialize()
+		getContacts()
 
 	}, [])
 
@@ -102,7 +55,7 @@ export const Home = () => {
 			</Link>
 
 			{
-				store.contacts.length === 0 && (
+				store.contacts.length === 0 && !store.searchActive && (
 
 					<div
 						className="d-flex flex-column justify-content-center align-items-center mt-5"
@@ -126,7 +79,32 @@ export const Home = () => {
 			}
 
 			{
-				(store.filteredContacts.length > 0
+				store.searchActive &&
+				store.filteredContacts.length === 0 && (
+
+					<div
+						className="d-flex flex-column justify-content-center align-items-center mt-5"
+						style={{ height: "40vh" }}
+					>
+
+						<div className="bg-white shadow-lg rounded-4 p-5 text-center">
+
+							<h1 className="display-1 mb-3">
+								❌
+							</h1>
+
+							<h3 className="fw-bold mb-2">
+								No se encontraron contactos
+							</h3>
+
+						</div>
+
+					</div>
+				)
+			}
+
+			{
+				(store.searchActive
 					? store.filteredContacts
 					: store.contacts
 				)?.map((contact) => (
@@ -141,7 +119,7 @@ export const Home = () => {
 							<div>
 
 								<h3 className="fw-bold mb-3">
-									{contact.name}
+									{contact.full_name}
 								</h3>
 
 								<p className="text-secondary mb-2">
